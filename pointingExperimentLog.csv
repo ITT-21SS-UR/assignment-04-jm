@@ -1,0 +1,2 @@
+timestamp,participantID,condition,pointerStartPosition,pointerEndPosition,startTimeInMS,endTimeInMS,timeTillFinishedInMs,missedClickCount
+1620598914.202736,1,1,"(20,20)","(30,30)",1620598906.0404422,1620598914.202727,8.162284851074219,0
