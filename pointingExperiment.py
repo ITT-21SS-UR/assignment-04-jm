@@ -141,5 +141,9 @@ class PointingExperimentLogger:
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    calculator = PointingExperiment(sys.argv[1])
+    try:
+        pointing_experiemnt = PointingExperiment(sys.argv[1])
+    except IndexError:
+        print("Please enter your setup_file name as parameter")
+
     sys.exit(app.exec_())
