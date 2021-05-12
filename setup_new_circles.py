@@ -16,8 +16,8 @@ def __check_if_circles_touch(center_1_x, center_1_y, center_2_x, center_2_y, rad
 
 
 def __create_new_random_coords(circle_radius):
-    x_pos = random.randint(0, WINDOW_WIDTH-circle_radius)
-    y_pos = random.randint(0, WINDOW_HEIGHT-circle_radius)
+    x_pos = random.randint(circle_radius, WINDOW_WIDTH-circle_radius)
+    y_pos = random.randint(circle_radius, WINDOW_HEIGHT-circle_radius)
     new_coord = (x_pos, y_pos)
     return new_coord
 
