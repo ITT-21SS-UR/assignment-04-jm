@@ -17,8 +17,12 @@ class PointingExperiment(QtWidgets.QWidget):
     def __init__(self, setup_file):
         super().__init__()
         self.__experiment_logger = PointingExperimentLogger()
+        self.__participant_id = self.__experiment_logger.get_next_participant_id()
         self.__experiment_started = False
         self.__start_time = None
+        self.__pointer_position_list = []
+        self.__time_per_target_list = []
+        self.__last_target_time = None
 
         self.__targetList = []
         self.__currentTargetId = 0
@@ -35,14 +39,18 @@ class PointingExperiment(QtWidgets.QWidget):
     def __init_ui(self):
         self.ui.stackedWidget.setCurrentIndex(0)
         self.ui.startExperimentButton.clicked.connect(self.__start_experiment)
+        self.ui.closeButton.clicked.connect(lambda: sys.exit(0))
+        self.ui.participantIdTextBox.setPlainText(str(self.__participant_id))
 
     def __setup_file_to_dict(self, setup_file):
         with open(setup_file) as json_file:
             return json.load(json_file)
 
     def __start_experiment(self):
+        self.__participant_id = int(self.ui.participantIdTextBox.toPlainText())
         self.__setup_targets(self.__setup_file)
         self.__start_time = time.time()
+        self.__last_target_time = self.__start_time
         self.__experiment_started = True
         self.ui.stackedWidget.setCurrentIndex(2)
 
@@ -93,19 +101,21 @@ class PointingExperiment(QtWidgets.QWidget):
         color_effect.setColor(color)
         label.setGraphicsEffect(color_effect)
 
-    def __mouse_clicked_at(self, x_pos, y_pos):
+    def __mouse_clicked_at(self, pointer_x, pointer_y):
         current_target = self.__targetList[self.__currentTargetId]
-        if self.__check_if_point_inside_circle(x_pos, y_pos, current_target.x() + self.__circle_radius,
+        if self.__check_if_point_inside_circle(pointer_x, pointer_y, current_target.x() + self.__circle_radius,
                                                current_target.y() + self.__circle_radius, self.__circle_radius):
-            self.__target_clicked()
+            self.__target_clicked(pointer_x, pointer_y)
 
-    def __target_clicked(self):
+    def __target_clicked(self, pointer_x, pointer_y):
         self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.green)
+        self.__time_per_target_list.append(time.time()-self.__last_target_time)
+        self.__pointer_position_list.append((pointer_x, pointer_y))
         if self.__currentTargetId < len(self.__targetList) - 1:
             self.__currentTargetId += 1
             self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.blue)
         else:
-            self.__experiment_logger.add_new_log_data(1, 1, "(20,20)", "(30,30)", self.__start_time,
+            self.__experiment_logger.add_new_log_data(self.__participant_id, 1, self.__pointer_position_list, self.__time_per_target_list, self.__start_time,
                                                       time.time(), 0)
 
     # https://www.geeksforgeeks.org/check-two-given-circles-touch-intersect/
@@ -137,27 +147,31 @@ class PointingExperimentLogger:
             study_data = pd.read_csv(self.__log_file_name)
         else:
             study_data = pd.DataFrame(
-                columns=['timestamp', 'participantID', 'condition', 'pointerStartPosition', 'pointerEndPosition',
+                columns=['timestamp', 'participantID', 'condition',  'pointerPositionsPerTarget', 'timesPerTarget',
                          'startTimeInMS', 'endTimeInMS', 'timeTillFinishedInS', 'missedClickCount'])
         return study_data
 
-    def add_new_log_data(self, participant_id, condition, pointer_start_position, pointer_end_position, start_time,
+    def add_new_log_data(self, participant_id, condition, pointer_position_list, time_per_target_list, start_time,
                          end_time, missed_clicks):
         self.__study_data = self.__study_data.append({'timestamp': time.time(), 'participantID': participant_id,
-                                                      'condition': condition, 'pointerStartPosition':
-                                                          pointer_start_position,
-                                                      'pointerEndPosition': pointer_end_position, 'startTimeInMS':
+                                                      'condition': condition, 'pointerPositionsPerTarget': pointer_position_list, 'timesPerTarget':
+                                                          time_per_target_list, 'startTimeInMS':
                                                           start_time, 'endTimeInMS': end_time, 'timeTillFinishedInS':
                                                           end_time - start_time, 'missedClickCount': missed_clicks},
                                                      ignore_index=True)
         self.__study_data.to_csv(self.__log_file_name, index=False)
 
+    def get_next_participant_id(self):
+        try:
+            return self.__study_data["participantID"].max()
+        except ValueError:
+            return 1
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     try:
-        pointing_experiemnt = PointingExperiment(sys.argv[1])
+        pointing_experiement = PointingExperiment(sys.argv[1])
     except IndexError:
-        print("Please enter your setup_file name as parameter")
+        print("Please enter your setup_file name as parameter, you can generate a ") # TODO with what?
 
     sys.exit(app.exec_())
