@@ -31,13 +31,13 @@
     <bool>true</bool>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="startPage">
     <property name="mouseTracking">
      <bool>true</bool>
     </property>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="welcomeText">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -63,14 +63,76 @@
       </rect>
      </property>
      <property name="text">
-      <string>PushButton</string>
+      <string>Start</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="participantIdTextBox">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>520</y>
+       <width>61</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="participantIdLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>530</y>
+       <width>111</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Participant ID:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="participantIdInfo">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>530</y>
+       <width>521</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>(This should allready be set correctly; do not touch if you are not instructed to)</string>
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="experimentPage">
+   <widget class="QWidget" name="EndPage">
     <property name="mouseTracking">
      <bool>true</bool>
     </property>
+    <widget class="QLabel" name="thankYouText">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>90</y>
+       <width>291</width>
+       <height>171</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Thank you for participaiting!!!</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="closeButton">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>330</y>
+       <width>88</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Close</string>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>
