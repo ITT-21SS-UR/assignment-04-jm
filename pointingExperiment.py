@@ -10,6 +10,7 @@ import time
 import pandas as pd
 import os
 import json
+from pointing_technique import BubbleCursor, Target
 
 
 class PointingExperiment(QtWidgets.QWidget):
@@ -18,9 +19,11 @@ class PointingExperiment(QtWidgets.QWidget):
         super().__init__()
         self.__experiment_logger = PointingExperimentLogger()
         self.__experiment_started = False
+        # self.__custom_pointing_technique_active = False  # TODO auch über parameter setzen wie setup file?
         self.__start_time = None
 
-        self.__targetList = []
+        self.__target_label_list = []
+        self.__all_targets = []
         self.__currentTargetId = 0
         self.__setup_file = setup_file
         self.__setup_dict = self.__setup_file_to_dict(self.__setup_file)
@@ -45,6 +48,11 @@ class PointingExperiment(QtWidgets.QWidget):
         self.__start_time = time.time()
         self.__experiment_started = True
         self.ui.stackedWidget.setCurrentIndex(2)
+        self._setup_pointing_technique()
+
+    def _setup_pointing_technique(self):
+        # TODO only if custom pointing technique!
+        self.__pointing_technique = BubbleCursor(all_targets=self.__all_targets, target_size=self.__circle_radius)
 
     def __read_line_from_file(self, setup_file, line_number) -> str:
         with open(setup_file) as file:
@@ -61,32 +69,52 @@ class PointingExperiment(QtWidgets.QWidget):
             circle_center = circle_center.replace("(", "")
             circle_center = circle_center.replace(")", "")
             circle_center = circle_center.split(",")
-            print(circle_center)
-            target = QLabel(new_widget)
-            target.setStyleSheet(round_button_stylesheet)
-            target.setFixedSize(self.__circle_radius * 2, self.__circle_radius * 2)
-            target.move(int(circle_center[0]) - self.__circle_radius, int(circle_center[1]) - self.__circle_radius)
-            target.setAttribute(Qt.WA_TransparentForMouseEvents)
-            self.__set_label_color(target, Qt.yellow)
-            target.setObjectName(f"button_{i}")
-            self.__targetList.append(target)
+            # print(circle_center)
+
+            target_label = QLabel(new_widget)
+            target_label.setStyleSheet(round_button_stylesheet)
+            target_label.setFixedSize(self.__circle_radius * 2, self.__circle_radius * 2)
+
+            # x and y need to be the top left coordinates of the rectangle that is styled as a circle to position
+            # it correctly; because of this we subtract the radius from both to get the top left coordinates
+            x_pos_rect = int(circle_center[0]) - self.__circle_radius
+            y_pos_rect = int(circle_center[1]) - self.__circle_radius
+            target_label.move(x_pos_rect, y_pos_rect)
+            target_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+            # target_label.setAttribute(Qt.WA_MacShowFocusRect, on=False)
+            self.__set_label_color(target_label, Qt.yellow)
+            target_label.setObjectName(f"button_{i}")
+            self.__target_label_list.append(target_label)
+            target = Target(int(circle_center[0]), int(circle_center[1]), self.__circle_radius)
+            self.__all_targets.append(target)
+
         self.ui.stackedWidget.addWidget(new_widget)
 
     def mousePressEvent(self, ev):
         if self.__experiment_started:
             if ev.button() == QtCore.Qt.LeftButton:
-                self.__mouse_clicked_at(ev.x(), ev.y())
+                print(f"Clicked at position: {ev.x()}, {ev.y()}")
+                current_target = self.__all_targets[self.__currentTargetId]
+                currently_selected_target = self.__pointing_technique.selectedTarget
+                if current_target == currently_selected_target:
+                    print("Clicked the correct target!")
+                    self.__target_clicked()
+                else:
+                    print("Wrong target!")
 
     def mouseMoveEvent(self, ev):
         if self.__experiment_started:
-            current_target = self.__targetList[self.__currentTargetId]
-            print(f"mousemoveeevent: {ev.x()}, {ev.y()}")
+            self.__pointing_technique.onMouseMoved(ev)
+            self.update()
+
+            current_target = self.__target_label_list[self.__currentTargetId]
+            # print(f"mousemoveeevent: {ev.x()}, {ev.y()}")
             if self.__check_if_point_inside_circle(ev.x(), ev.y(), current_target.x() + self.__circle_radius,
                                                    current_target.y() + self.__circle_radius, self.__circle_radius):
                 print("over target")
-                self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.darkRed)
+                self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.darkRed)
             else:
-                self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.blue)
+                self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.blue)
 
     def __set_label_color(self, label, color):
         color_effect = QGraphicsColorizeEffect()
@@ -94,16 +122,16 @@ class PointingExperiment(QtWidgets.QWidget):
         label.setGraphicsEffect(color_effect)
 
     def __mouse_clicked_at(self, x_pos, y_pos):
-        current_target = self.__targetList[self.__currentTargetId]
+        current_target = self.__target_label_list[self.__currentTargetId]
         if self.__check_if_point_inside_circle(x_pos, y_pos, current_target.x() + self.__circle_radius,
                                                current_target.y() + self.__circle_radius, self.__circle_radius):
             self.__target_clicked()
 
     def __target_clicked(self):
-        self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.green)
-        if self.__currentTargetId < len(self.__targetList) - 1:
+        self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.green)
+        if self.__currentTargetId < len(self.__target_label_list) - 1:
             self.__currentTargetId += 1
-            self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.blue)
+            self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.blue)
         else:
             self.__experiment_logger.add_new_log_data(1, 1, "(20,20)", "(30,30)", self.__start_time,
                                                       time.time(), 0)
@@ -123,6 +151,16 @@ class PointingExperiment(QtWidgets.QWidget):
             return True
         else:
             return False
+
+    def paintEvent(self, event: QPaintEvent):
+        if self.__experiment_started:
+            # The QPainter code MUST be in the paintEvent if inheriting from a QWidget!
+            # (alternatively a pixmap() could be used as a custom canvas for drawing)
+            painter = QtGui.QPainter()
+            painter.begin(self)
+            self.__pointing_technique.onPaintEvent(painter)
+            # self.__custom_pointing_technique_active = False
+            painter.end()
 
 
 class PointingExperimentLogger:
