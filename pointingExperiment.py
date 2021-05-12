@@ -53,6 +53,7 @@ class PointingExperiment(QtWidgets.QWidget):
         self.__last_target_time = self.__start_time
         self.__experiment_started = True
         self.ui.stackedWidget.setCurrentIndex(2)
+        self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.blue)
 
     def __read_line_from_file(self, setup_file, line_number) -> str:
         with open(setup_file) as file:
@@ -117,6 +118,7 @@ class PointingExperiment(QtWidgets.QWidget):
         else:
             self.__experiment_logger.add_new_log_data(self.__participant_id, 1, self.__pointer_position_list, self.__time_per_target_list, self.__start_time,
                                                       time.time(), 0)
+            self.ui.stackedWidget.setCurrentIndex(1)
 
     # https://www.geeksforgeeks.org/check-two-given-circles-touch-intersect/
     def __check_if_circles_touch(self, center_1_x, center_1_y, center_2_x, center_2_y, radius):
@@ -163,14 +165,14 @@ class PointingExperimentLogger:
 
     def get_next_participant_id(self):
         try:
-            return self.__study_data["participantID"].max()
+            return self.__study_data["participantID"].max()+1
         except ValueError:
             return 1
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     try:
-        pointing_experiement = PointingExperiment(sys.argv[1])
+        pointing_experiment = PointingExperiment(sys.argv[1])
     except IndexError:
         print("Please enter your setup_file name as parameter, you can generate a ") # TODO with what?
 
