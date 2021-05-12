@@ -26,6 +26,9 @@ The implementation of the BubbleCursors' ability to morph its area around the cl
 containable by the cursor area without intersecting another target is done by highlighting the currently selected
 target with a border. This could be improved in the future to provide a better visual cue for users as shown in the
 paper above.
+
+
+The pointing technique was completely implemented by Michael Meckl.
 """
 
 from PyQt5 import QtWidgets, QtCore, QtGui
