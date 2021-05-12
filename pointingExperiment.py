@@ -31,18 +31,17 @@ class PointingExperiment(QtWidgets.QWidget):
 
     def __start_experiment(self):
         self.__setup_targets(self.__setup_file)
-        self.ui.startButton.setVisible(False)
         self.__experiment_started = True
 
-    def __read_line_from_file(self, setup_file, line_number):
-        file = open(setup_file)
-        return file.readlines()[line_number]
+    def __read_line_from_file(self, setup_file, line_number) -> str:
+        with open(setup_file) as file:
+            return file.readlines()[line_number]
 
     def __setup_targets(self, circle_setup_file):
-        file = open(circle_setup_file)
         round_button_stylesheet = "border-color: rgb(66, 69, 183); background-color: rgb(53, 132, 228); " \
                                   f"border-style: solid; border-radius: {self.__circle_radius}px;"
-        circle_positions = file.readlines()[2].split(";")  # The coordinates are writen in line 3 and split by ";"
+        with open(circle_setup_file) as file:
+            circle_positions = file.readlines()[2].split(";")  # The coordinates are writen in line 3 and split by ";"
         for i in range(len(circle_positions)):
             circle_center = circle_positions[i]
             circle_center = circle_center.replace("(", "")
