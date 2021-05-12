@@ -47,7 +47,13 @@
       </rect>
      </property>
      <property name="text">
-      <string>Welcome and thanks for participating in our pointer experiment. As soon as u click the start button bellow the expirment will start. </string>
+      <string>Welcome and thanks for participating in our pointer experiment.
+ This experiment will measure how long you need to click on circles on the screen. Please click the on the blue marked circles as fast as you can 
+ There will be 2 rounds.
+ One with big and one with smaller circles. 
+The the second round will start immediatelly after you finished the first round,
+ the first round will start when you click the button below.
+ Your cursor will be move to the top left corner of the window for both rounds</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -56,10 +62,10 @@
     <widget class="QPushButton" name="startExperimentButton">
      <property name="geometry">
       <rect>
-       <x>270</x>
-       <y>270</y>
-       <width>181</width>
-       <height>111</height>
+       <x>10</x>
+       <y>240</y>
+       <width>151</width>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
@@ -117,7 +123,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Thank you for participaiting!!!</string>
+      <string>Thank you for participating!!!</string>
      </property>
     </widget>
     <widget class="QPushButton" name="closeButton">
