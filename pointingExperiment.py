@@ -138,18 +138,20 @@ class PointingExperiment(QtWidgets.QWidget):
                                                current_target.y() + self.__circle_radius, self.__circle_radius):
             self.__target_clicked(pointer_x, pointer_y)
 
-
     def __target_clicked(self, pointer_x, pointer_y):
+        click_time = time.time()
         self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.green)
-        self.__time_per_target_list.append(time.time()-self.__last_target_time)
+        self.__time_per_target_list.append(click_time-self.__last_target_time)
         self.__pointer_position_list.append((pointer_x, pointer_y))
         if self.__currentTargetId < len(self.__target_label_list) - 1:
             self.__currentTargetId += 1
             self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.blue)
         else:
             self.__experiment_logger.add_new_log_data(self.__participant_id, 1, self.__pointer_position_list, self.__time_per_target_list, self.__start_time,
-                                                      time.time(), 0)
+                                                      click_time, 0)
             self.ui.stackedWidget.setCurrentIndex(1)
+            self.__experiment_started = False
+        self.__last_target_time = click_time
 
     # https://www.geeksforgeeks.org/check-two-given-circles-touch-intersect/
     def __check_if_circles_touch(self, center_1_x, center_1_y, center_2_x, center_2_y, radius):
@@ -209,6 +211,7 @@ class PointingExperimentLogger:
             return self.__study_data["participantID"].max()+1
         except ValueError:
             return 1
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
