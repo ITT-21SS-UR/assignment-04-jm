@@ -18,54 +18,61 @@
 
 }</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
-   <item>
-    <widget class="QStackedWidget" name="stackedWidget">
-     <property name="mouseTracking">
+  <widget class="QStackedWidget" name="stackedWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>600</height>
+    </rect>
+   </property>
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
+   <property name="currentIndex">
+    <number>1</number>
+   </property>
+   <widget class="QWidget" name="startPage">
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>681</width>
+       <height>261</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Welcome and thanks for participating in our pointer experiment. As soon as u click the start button bellow the expirment will start. </string>
+     </property>
+     <property name="wordWrap">
       <bool>true</bool>
      </property>
-     <widget class="QWidget" name="startPage">
-      <property name="mouseTracking">
-       <bool>true</bool>
-      </property>
-      <widget class="QLabel" name="label_2">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>681</width>
-         <height>261</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Welcome and thanks for participating in our pointer experiment. As soon as u click the start button bellow the expirment will start. </string>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="startExperimentButton">
-       <property name="geometry">
-        <rect>
-         <x>270</x>
-         <y>270</y>
-         <width>181</width>
-         <height>111</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>PushButton</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QWidget" name="experimentPage">
-      <property name="mouseTracking">
-       <bool>true</bool>
-      </property>
-     </widget>
     </widget>
-   </item>
-  </layout>
+    <widget class="QPushButton" name="startExperimentButton">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>270</y>
+       <width>181</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>PushButton</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="experimentPage">
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+   </widget>
+  </widget>
  </widget>
  <resources/>
  <connections/>
