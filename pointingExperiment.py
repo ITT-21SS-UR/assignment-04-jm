@@ -18,18 +18,23 @@ class PointingExperiment(QtWidgets.QWidget):
         super().__init__()
         self.__experiment_logger = PointingExperimentLogger()
         self.__experiment_started = False
-        self.ui = uic.loadUi("pointing.ui", self)
+        self.__start_time = None
+
         self.__targetList = []
         self.__currentTargetId = 0
         self.__setup_file = setup_file
         self.__setup_dict = self.__setup_file_to_dict(self.__setup_file)
         self.__circle_count = self.__setup_dict["numberOfCircles"]
         self.__circle_radius = int(self.__setup_dict["circleRadius"])
-        self.__start_experiment()
+
+        self.ui = uic.loadUi("pointing.ui", self)
+        self.__init_ui()
         self.show()
         self.setMouseTracking(True)
-        self.__start_time = time.time()
-        print(self.cursor().shape())
+
+    def __init_ui(self):
+        self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.startExperimentButton.clicked.connect(self.__start_experiment)
 
     def __setup_file_to_dict(self, setup_file):
         with open(setup_file) as json_file:
@@ -37,13 +42,17 @@ class PointingExperiment(QtWidgets.QWidget):
 
     def __start_experiment(self):
         self.__setup_targets(self.__setup_file)
+        self.__start_time = time.time()
         self.__experiment_started = True
+        self.ui.stackedWidget.setCurrentIndex(2)
 
     def __read_line_from_file(self, setup_file, line_number) -> str:
         with open(setup_file) as file:
             return file.readlines()[line_number]
 
     def __setup_targets(self, circle_setup_file):
+        new_widget = QWidget()
+        new_widget.setAttribute(Qt.WA_TransparentForMouseEvents)
         round_button_stylesheet = "border-color: rgb(66, 69, 183); background-color: rgb(53, 132, 228); " \
                                   f"border-style: solid; border-radius: {self.__circle_radius}px;"
         circle_positions = self.__setup_dict["coordinates"].split(";")
@@ -53,7 +62,7 @@ class PointingExperiment(QtWidgets.QWidget):
             circle_center = circle_center.replace(")", "")
             circle_center = circle_center.split(",")
             print(circle_center)
-            target = QLabel(self.ui)
+            target = QLabel(new_widget)
             target.setStyleSheet(round_button_stylesheet)
             target.setFixedSize(self.__circle_radius * 2, self.__circle_radius * 2)
             target.move(int(circle_center[0]) - self.__circle_radius, int(circle_center[1]) - self.__circle_radius)
@@ -61,6 +70,7 @@ class PointingExperiment(QtWidgets.QWidget):
             self.__set_label_color(target, Qt.yellow)
             target.setObjectName(f"button_{i}")
             self.__targetList.append(target)
+        self.ui.stackedWidget.addWidget(new_widget)
 
     def mousePressEvent(self, ev):
         if self.__experiment_started:
