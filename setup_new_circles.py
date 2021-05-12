@@ -1,5 +1,6 @@
 import random
 import sys
+import json
 
 WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 800
@@ -40,10 +41,9 @@ def __create_circle_coordinates(number_of_circles, circle_radius):
 
 def __write_config_to_file(number_of_circles, circle_radius, file_name):
     coord_string = __create_circle_coordinates(number_of_circles, circle_radius)
-    file = open(file_name, "w")
-    file.write(str(number_of_circles)+"\n")
-    file.write(str(circle_radius)+"\n")
-    file.write(coord_string)
+    setup_data_dict = {"numberOfCircles": number_of_circles, "circleRadius": circle_radius, "coordinates": coord_string}
+    with open(file_name, "w") as file:
+        json.dump(setup_data_dict, file)
 
 
 if __name__ == '__main__':

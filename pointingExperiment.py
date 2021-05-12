@@ -9,6 +9,7 @@ from PyQt5.QtCore import *
 import time
 import pandas as pd
 import os
+import json
 
 
 class PointingExperiment(QtWidgets.QWidget):
@@ -21,13 +22,18 @@ class PointingExperiment(QtWidgets.QWidget):
         self.__targetList = []
         self.__currentTargetId = 0
         self.__setup_file = setup_file
-        self.__circle_count = self.__read_line_from_file(setup_file, 0)
-        self.__circle_radius = int(self.__read_line_from_file(setup_file, 1))
+        self.__setup_dict = self.__setup_file_to_dict(self.__setup_file)
+        self.__circle_count = self.__setup_dict["numberOfCircles"]
+        self.__circle_radius = int(self.__setup_dict["circleRadius"])
         self.__start_experiment()
         self.show()
         self.setMouseTracking(True)
         self.__start_time = time.time()
         print(self.cursor().shape())
+
+    def __setup_file_to_dict(self, setup_file):
+        with open(setup_file) as json_file:
+            return json.load(json_file)
 
     def __start_experiment(self):
         self.__setup_targets(self.__setup_file)
@@ -40,8 +46,7 @@ class PointingExperiment(QtWidgets.QWidget):
     def __setup_targets(self, circle_setup_file):
         round_button_stylesheet = "border-color: rgb(66, 69, 183); background-color: rgb(53, 132, 228); " \
                                   f"border-style: solid; border-radius: {self.__circle_radius}px;"
-        with open(circle_setup_file) as file:
-            circle_positions = file.readlines()[2].split(";")  # The coordinates are writen in line 3 and split by ";"
+        circle_positions = self.__setup_dict["coordinates"].split(";")
         for i in range(len(circle_positions)):
             circle_center = circle_positions[i]
             circle_center = circle_center.replace("(", "")
@@ -91,12 +96,12 @@ class PointingExperiment(QtWidgets.QWidget):
             self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.blue)
         else:
             self.__experiment_logger.add_new_log_data(1, 1, "(20,20)", "(30,30)", self.__start_time,
-                                                        time.time(), 0)
+                                                      time.time(), 0)
 
     # https://www.geeksforgeeks.org/check-two-given-circles-touch-intersect/
     def __check_if_circles_touch(self, center_1_x, center_1_y, center_2_x, center_2_y, radius):
         dist_sq = (center_1_x - center_2_x) * (center_1_x - center_2_x) + (center_1_y - center_2_y) * (
-                center_1_y - center_2_y);
+                center_1_y - center_2_y)
         rad_sum_sq = (radius + radius) * (radius + radius)
         if dist_sq < rad_sum_sq:
             return True
@@ -127,7 +132,7 @@ class PointingExperimentLogger:
         return study_data
 
     def add_new_log_data(self, participant_id, condition, pointer_start_position, pointer_end_position, start_time,
-                           end_time, missed_clicks):
+                         end_time, missed_clicks):
         self.__study_data = self.__study_data.append({'timestamp': time.time(), 'participantID': participant_id,
                                                       'condition': condition, 'pointerStartPosition':
                                                           pointer_start_position,
