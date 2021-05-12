@@ -56,7 +56,7 @@ class PointingExperiment(QtWidgets.QWidget):
         self.__last_target_time = self.__start_time
         self.__experiment_started = True
         self.ui.stackedWidget.setCurrentIndex(2)
-        self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.blue)
+        self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.blue)
         self._setup_pointing_technique()
 
     def _setup_pointing_technique(self):
@@ -108,7 +108,7 @@ class PointingExperiment(QtWidgets.QWidget):
                 currently_selected_target = self.__pointing_technique.selectedTarget
                 if current_target == currently_selected_target:
                     print("Clicked the correct target!")
-                    self.__target_clicked()
+                    self.__target_clicked(ev.x(), ev.y())
                 else:
                     print("Wrong target!")
 
@@ -140,10 +140,10 @@ class PointingExperiment(QtWidgets.QWidget):
 
 
     def __target_clicked(self, pointer_x, pointer_y):
-        self.__set_label_color(self.__targetList[self.__currentTargetId], Qt.green)
+        self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.green)
         self.__time_per_target_list.append(time.time()-self.__last_target_time)
         self.__pointer_position_list.append((pointer_x, pointer_y))
-        if self.__currentTargetId < len(self.__targetList) - 1:
+        if self.__currentTargetId < len(self.__target_label_list) - 1:
             self.__currentTargetId += 1
             self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.blue)
         else:
