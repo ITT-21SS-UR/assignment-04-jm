@@ -13,6 +13,12 @@ import json
 from pointing_technique import BubbleCursor, Target
 import math
 
+'''We split the work on this assignment as follows:
+    We planned our study together.
+    Johannes Lorper implemented the experiment from task 4.1 and our setup helper "setup_condition.py. 
+    Michael Meckl implemented the pointing technique
+'''
+
 
 class PointingExperiment(QtWidgets.QWidget):
 
@@ -24,14 +30,13 @@ class PointingExperiment(QtWidgets.QWidget):
         self.__custom_pointing_technique_active = use_pointing_technique
         self.__start_time = None
 
-
         self.__target_label_list = []
         self.__all_targets = []
         self.__setup_file = setup_file
         self.__setup_dict = self.__setup_file_to_dict(self.__setup_file)
         self.__circle_count = self.__setup_dict["numberOfCircles"]
         self.__condition_list = self.__setup_dict["circleRadiusList"]
-        self.__counter_balanced_condition_list = [] # will be set on experiment start
+        self.__counter_balanced_condition_list = []  # will be set on experiment start
         self.__condition_count = len(self.__counter_balanced_condition_list)
         self.__current_condition_id = 0
 
@@ -51,19 +56,18 @@ class PointingExperiment(QtWidgets.QWidget):
 
         # First we need to create a balanced latin square according to our number of conditions:
         # https://medium.com/@graycoding/balanced-latin-squares-in-python-2c3aa6ec95b9
-        balanced_order = [[((j//2+1 if j%2 else condition_count-j//2) + i) % condition_count + 1 for j in range(condition_count)] for i in range(condition_count)]
+        balanced_order = [[((j // 2 + 1 if j % 2 else condition_count - j // 2) + i) % condition_count + 1 for j in
+                           range(condition_count)] for i in range(condition_count)]
         if condition_count % 2:  # Repeat reversed for odd n
             balanced_order += [seq[::-1] for seq in balanced_order]
         order_for_participant = balanced_order[participant_id % condition_count]
 
         # Now we will reorder our conditions-list with the balanced-latin-square order we created above
         # https://stackoverflow.com/questions/2177590/how-can-i-reorder-a-list/2177607
-        for i in range (len(order_for_participant)):
+        for i in range(len(order_for_participant)):
             order_for_participant[i] -= 1
 
         return [condition_list[i] for i in order_for_participant]
-
-
 
     def __setup_file_to_dict(self, setup_file):
         with open(setup_file) as json_file:
@@ -79,14 +83,15 @@ class PointingExperiment(QtWidgets.QWidget):
         self.__miss_click_count = 0
 
         self.__participant_id = int(self.ui.participantIdTextBox.toPlainText())
-        self.__counter_balanced_condition_list = self.__get_balanced_condition_list(self.__condition_list, self.__participant_id)
+        self.__counter_balanced_condition_list = self.__get_balanced_condition_list(self.__condition_list,
+                                                                                    self.__participant_id)
         self.__setup_targets()
         self.__start_time = time.time()
         self.__last_target_time = self.__start_time
         self.__move_mouse_to_top_left_corner()
         self.__experiment_started = True
 
-        self.ui.stackedWidget.setCurrentIndex(self.__current_condition_id+2)
+        self.ui.stackedWidget.setCurrentIndex(self.__current_condition_id + 2)
         self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.blue)
         if self.__custom_pointing_technique_active == 1:
             self._setup_pointing_technique()
@@ -146,7 +151,8 @@ class PointingExperiment(QtWidgets.QWidget):
                 else:
                     current_target = self.__target_label_list[self.__currentTargetId]
                     if self.__check_if_point_inside_circle(ev.x(), ev.y(), current_target.x() + self.__circle_radius,
-                                                   current_target.y() + self.__circle_radius, self.__circle_radius):
+                                                           current_target.y() + self.__circle_radius,
+                                                           self.__circle_radius):
                         self.__target_clicked(ev.x(), ev.y())
                     else:
                         self.__miss_click_count += 1
@@ -180,10 +186,11 @@ class PointingExperiment(QtWidgets.QWidget):
             self.__currentTargetId += 1
             self.__set_label_color(self.__target_label_list[self.__currentTargetId], Qt.blue)
         else:
-            self.__experiment_logger.add_new_log_data(self.__participant_id, self.__current_condition_id, self.__pointer_position_list,
-                                                      self.__time_per_target_list, self.__start_time,
-                                                      click_time, self.__miss_click_count, self.__custom_pointing_technique_active == 1)
-            if self.__current_condition_id < len(self.__condition_list)-1:
+            self.__experiment_logger.add_new_log_data(self.__participant_id, self.__current_condition_id,
+                                                      self.__pointer_position_list, self.__time_per_target_list,
+                                                      self.__start_time, click_time, self.__miss_click_count,
+                                                      self.__custom_pointing_technique_active == 1)
+            if self.__current_condition_id < len(self.__condition_list) - 1:
                 self.__current_condition_id += 1
                 self.__start_experiment()
             else:
@@ -232,7 +239,8 @@ class PointingExperimentLogger:
         else:
             study_data = pd.DataFrame(
                 columns=['timestamp', 'participantID', 'condition', 'pointerPositionsPerTarget', 'timesPerTargetInS',
-                         'startTimeAsUnix', 'endTimeAsUnix', 'timeTillFinishedInS', 'missedClickCount', 'bubblePointingTechnique'])
+                         'startTimeAsUnix', 'endTimeAsUnix', 'timeTillFinishedInS', 'missedClickCount',
+                         'bubblePointingTechnique'])
         return study_data
 
     def add_new_log_data(self, participant_id, condition, pointer_position_list, time_per_target_list, start_time,
@@ -244,12 +252,12 @@ class PointingExperimentLogger:
                                                       'timesPerTargetInS':
                                                           time_per_target_list, 'startTimeAsUnix':
                                                           start_time, 'endTimeAsUnix': end_time, 'timeTillFinishedInS':
-                                                          end_time - start_time, 'missedClickCount': missed_clicks, 'bubblePointingTechnique': bubble_pointing_active},
+                                                          end_time - start_time, 'missedClickCount': missed_clicks,
+                                                      'bubblePointingTechnique': bubble_pointing_active},
                                                      ignore_index=True)
         self.__study_data.to_csv(self.__log_file_name, index=False)
         with open(self.__log_file_name) as file:
             print(file.readlines()[-1])
-
 
     def get_next_participant_id(self):
         if not math.isnan(self.__study_data["participantID"].max()):
